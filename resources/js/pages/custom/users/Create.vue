@@ -8,6 +8,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle, UserPlus } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -28,7 +29,10 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('users.store'));
+    form.post(route('users.store'), {
+        onSuccess: () => toast.success('User created successfully'),
+        onError: () => toast.error('Failed to create user'),
+    });
 };
 </script>
 

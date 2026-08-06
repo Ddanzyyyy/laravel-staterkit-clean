@@ -8,6 +8,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem, User } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle, Pencil } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -36,7 +37,10 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.put(route('users.update', props.user.id));
+    form.put(route('users.update', { id: props.user.id }), {
+        onSuccess: () => toast.success('User updated successfully'),
+        onError: () => toast.error('Failed to update user'),
+    });
 };
 </script>
 

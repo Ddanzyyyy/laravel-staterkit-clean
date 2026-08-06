@@ -1,13 +1,21 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
 import { Head } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
-import { watch } from 'vue';
+import { ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -31,28 +39,24 @@ interface Paginator {
     links: Array<{ url: string | null; label: string; active: boolean }>;
 }
 
-const props = defineProps<{
+defineProps<{
     users: Paginator;
-    flash?: { success?: string | null };
 }>();
 
-watch(
-    () => props.flash?.success,
-    (message) => {
-        if (message) {
-            toast.success(message);
-        }
-    },
-    { immediate: true },
-);
+const userToDelete = ref<UserRow | null>(null);
 
-const destroy = (user: UserRow) => {
-    if (confirm(`Delete ${user.name}?`)) {
-        router.delete(`/users/${user.id}`, {
-            onSuccess: () => toast.success(`User "${user.name}" deleted`),
-            onError: () => toast.error('Failed to delete user'),
-        });
+const destroy = () => {
+    if (!userToDelete.value) {
+        return;
     }
+
+    const user = userToDelete.value;
+    userToDelete.value = null;
+
+    router.delete(`/users/${user.id}`, {
+        onSuccess: () => toast.success(`User "${user.name}" deleted`),
+        onError: () => toast.error('Failed to delete user'),
+    });
 };
 </script>
 
@@ -93,7 +97,7 @@ const destroy = (user: UserRow) => {
                                                     Edit
                                                 </Link>
                                             </Button>
-                                            <Button variant="destructive" size="sm" @click="destroy(user)">
+                                            <Button variant="destructive" size="sm" @click="userToDelete = user">
                                                 <Trash2 class="h-3.5 w-3.5" />
                                                 Delete
                                             </Button>
@@ -119,6 +123,21 @@ const destroy = (user: UserRow) => {
                     </div>
                 </CardContent>
             </Card>
+
+            <Dialog :open="userToDelete !== null" @update:open="(open) => (userToDelete = open ? userToDelete : null)">
+                <DialogContent class="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Delete user</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete "{{ userToDelete?.name }}"? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" @click="userToDelete = null">Cancel</Button>
+                        <Button variant="destructive" @click="destroy">Delete</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     </AppLayout>
 </template>

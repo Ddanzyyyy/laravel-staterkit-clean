@@ -38,7 +38,7 @@ class UserController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        return to_route('users.index')->with('success', 'User created successfully.');
+        return to_route('users.index');
     }
 
     public function edit(User $user): Response
@@ -67,7 +67,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return to_route('users.index')->with('success', 'User updated successfully.');
+        return to_route('users.index');
     }
 
     public function destroy(User $user): RedirectResponse
