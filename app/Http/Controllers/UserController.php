@@ -83,7 +83,7 @@ class UserController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
-        $user->delete();
+        User::whereKey($user->id)->delete();
 
         return to_route('users.index');
     }
@@ -95,7 +95,7 @@ class UserController extends Controller
             'ids.*' => ['integer'],
         ]);
 
-        User::whereIn('id', $validated['ids'])->delete();
+        User::destroy($validated['ids']);
 
         return to_route('users.index');
     }
