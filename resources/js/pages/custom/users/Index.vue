@@ -35,19 +35,24 @@ interface Paginator {
 
 const props = defineProps<{
     users: Paginator;
-    filters: { search?: string };
+    filters: { search?: string; per_page?: number };
 }>();
 
 const userToDelete = ref<UserRow | null>(null);
 
 const search = ref(props.filters.search ?? '');
+const perPage = ref(props.filters.per_page ?? 10);
 
 let debounceTimer: ReturnType<typeof setTimeout>;
 watch(search, (value) => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-        router.get('/users', { search: value || undefined }, { preserveState: true, preserveScroll: true, replace: true });
+        router.get('/users', { search: value || undefined, per_page: perPage.value }, { preserveState: true, preserveScroll: true, replace: true });
     }, 300);
+});
+
+watch(perPage, (value) => {
+    router.get('/users', { search: search.value || undefined, per_page: value }, { preserveState: true, preserveScroll: true });
 });
 
 const destroy = () => {
@@ -73,17 +78,17 @@ const destroy = () => {
             <Card>
                 <CardHeader class="flex flex-row items-center justify-between space-y-0">
                     <CardTitle>Users</CardTitle>
-                    <Button as-child>
-                        <Link :href="route('users.create')">
-                            <Plus class="h-4 w-4" />
-                            Add User
-                        </Link>
-                    </Button>
+                    <div class="flex items-center gap-2">
+                        <Input v-model="search" type="search" placeholder="Search name or email..." class="max-w-xs" />
+                        <Button as-child>
+                            <Link :href="route('users.create')">
+                                <Plus class="h-4 w-4" />
+                                Add User
+                            </Link>
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
-                    <div class="mb-4">
-                        <Input v-model="search" type="search" placeholder="Search name or email..." class="max-w-xs" />
-                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
@@ -121,15 +126,25 @@ const destroy = () => {
                         </table>
                     </div>
 
-                    <div v-if="users.links.length > 3" class="mt-4 flex justify-center gap-1">
-                        <template v-for="link in users.links" :key="link.label">
-                            <Button v-if="link.url" :variant="link.active ? 'default' : 'outline'" size="sm" as-child>
-                                <Link :href="link.url">{{ link.label }}</Link>
-                            </Button>
-                            <Button v-else variant="outline" size="sm" disabled>
-                                {{ link.label }}
-                            </Button>
-                        </template>
+                    <div class="mt-4 flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>Rows per page</span>
+                            <select v-model.number="perPage" class="rounded-md border bg-background px-2 py-1 text-sm">
+                                <option :value="10">10</option>
+                                <option :value="25">25</option>
+                                <option :value="50">50</option>
+                            </select>
+                        </div>
+                        <div v-if="users.links.length > 3" class="flex justify-center gap-1">
+                            <template v-for="link in users.links" :key="link.label">
+                                <Button v-if="link.url" :variant="link.active ? 'default' : 'outline'" size="sm" as-child>
+                                    <Link :href="link.url">{{ link.label }}</Link>
+                                </Button>
+                                <Button v-else variant="outline" size="sm" disabled>
+                                    {{ link.label }}
+                                </Button>
+                            </template>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

@@ -21,9 +21,12 @@ class UserController extends Controller
                         ->orWhere('email', 'like', "%{$search}%");
                 })
                 ->latest()
-                ->paginate(10)
+                ->paginate($request->integer('per_page', 10))
                 ->withQueryString(),
-            'filters' => ['search' => $request->string('search')->toString()],
+            'filters' => [
+                'search' => $request->string('search')->toString(),
+                'per_page' => $request->integer('per_page', 10),
+            ],
         ]);
     }
 
