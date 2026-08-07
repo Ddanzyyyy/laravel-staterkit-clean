@@ -7,7 +7,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -31,6 +31,8 @@ interface UserRow {
 interface Paginator {
     data: UserRow[];
     links: Array<{ url: string | null; label: string; active: boolean }>;
+    current_page: number;
+    per_page: number;
 }
 
 const props = defineProps<{
@@ -39,6 +41,27 @@ const props = defineProps<{
 }>();
 
 const userToDelete = ref<UserRow | null>(null);
+const bulkDeleteOpen = ref(false);
+const selectedIds = ref<number[]>([]);
+
+const allSelected = computed(() => props.users.data.length > 0 && props.users.data.every((user) => selectedIds.value.includes(user.id)));
+
+const toggleSelect = (id: number) => {
+    const index = selectedIds.value.indexOf(id);
+    if (index === -1) {
+        selectedIds.value.push(id);
+    } else {
+        selectedIds.value.splice(index, 1);
+    }
+};
+
+const toggleAll = () => {
+    if (allSelected.value) {
+        selectedIds.value = selectedIds.value.filter((id) => !props.users.data.some((user) => user.id === id));
+    } else {
+        selectedIds.value = [...new Set([...selectedIds.value, ...props.users.data.map((user) => user.id)])];
+    }
+};
 
 const search = ref(props.filters.search ?? '');
 const perPage = ref(props.filters.per_page ?? 10);
@@ -68,6 +91,19 @@ const destroy = () => {
         onError: () => toast.error('Failed to delete user'),
     });
 };
+
+const destroyBulk = () => {
+    const ids = [...selectedIds.value];
+    bulkDeleteOpen.value = false;
+
+    router.post('/users/bulk-destroy', { ids }, {
+        onSuccess: () => {
+            selectedIds.value = [];
+            toast.success(`${ids.length} users deleted`);
+        },
+        onError: () => toast.error('Failed to delete users'),
+    });
+};
 </script>
 
 <template>
@@ -80,6 +116,10 @@ const destroy = () => {
                     <CardTitle>Users</CardTitle>
                     <div class="flex items-center gap-2">
                         <Input v-model="search" type="search" placeholder="Search name or email..." class="max-w-xs" />
+                        <Button v-if="selectedIds.length > 0" variant="destructive" @click="bulkDeleteOpen = true">
+                            <Trash2 class="h-4 w-4" />
+                            Delete ({{ selectedIds.length }})
+                        </Button>
                         <Button as-child>
                             <Link :href="route('users.create')">
                                 <Plus class="h-4 w-4" />
@@ -93,6 +133,10 @@ const destroy = () => {
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b text-left text-muted-foreground">
+                                    <th class="py-2 pr-4">
+                                        <input type="checkbox" :checked="allSelected" @change="toggleAll" class="h-4 w-4" />
+                                    </th>
+                                    <th class="py-2 pr-4">No</th>
                                     <th class="py-2 pr-4">Name</th>
                                     <th class="py-2 pr-4">Email</th>
                                     <th class="py-2 pr-4">Created</th>
@@ -100,7 +144,11 @@ const destroy = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="user in users.data" :key="user.id" class="border-b last:border-0">
+                                <tr v-for="(user, index) in users.data" :key="user.id" class="border-b last:border-0">
+                                    <td class="py-3 pr-4">
+                                        <input type="checkbox" :checked="selectedIds.includes(user.id)" @change="toggleSelect(user.id)" class="h-4 w-4" />
+                                    </td>
+                                    <td class="py-3 pr-4 text-muted-foreground">{{ (users.current_page - 1) * users.per_page + index + 1 }}</td>
                                     <td class="py-3 pr-4 font-medium">{{ user.name }}</td>
                                     <td class="py-3 pr-4 text-muted-foreground">{{ user.email }}</td>
                                     <td class="py-3 pr-4 text-muted-foreground">{{ new Date(user.created_at).toLocaleDateString() }}</td>
@@ -120,7 +168,7 @@ const destroy = () => {
                                     </td>
                                 </tr>
                                 <tr v-if="users.data.length === 0">
-                                    <td colspan="4" class="py-6 text-center text-muted-foreground">No users yet.</td>
+                                    <td colspan="6" class="py-6 text-center text-muted-foreground">No users yet.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -160,6 +208,20 @@ const destroy = () => {
                     <DialogFooter>
                         <Button variant="outline" @click="userToDelete = null">Cancel</Button>
                         <Button variant="destructive" @click="destroy">Delete</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <Dialog :open="bulkDeleteOpen" @update:open="(open) => (bulkDeleteOpen = open)">
+                <DialogContent class="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Delete selected users</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete {{ selectedIds.length }} users? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" @click="bulkDeleteOpen = false">Cancel</Button>
+                        <Button variant="destructive" @click="destroyBulk">Delete</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

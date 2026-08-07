@@ -30,3 +30,18 @@ test('users index honors per_page query param', function () {
             ->has('users.data', 25)
             ->where('filters.per_page', 25));
 });
+
+test('users can be bulk deleted', function () {
+    $this->actingAs(User::factory()->create());
+
+    $targets = User::factory()->count(3)->create();
+    $keeper = User::factory()->create();
+
+    $this->post('/users/bulk-destroy', ['ids' => $targets->pluck('id')->all()])
+        ->assertRedirect(route('users.index'));
+
+    $this->assertDatabaseMissing('users', ['id' => $targets[0]->id]);
+    $this->assertDatabaseMissing('users', ['id' => $targets[1]->id]);
+    $this->assertDatabaseMissing('users', ['id' => $targets[2]->id]);
+    $this->assertDatabaseHas('users', ['id' => $keeper->id]);
+});

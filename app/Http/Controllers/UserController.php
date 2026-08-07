@@ -87,4 +87,16 @@ class UserController extends Controller
 
         return to_route('users.index');
     }
+
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ]);
+
+        User::whereIn('id', $validated['ids'])->delete();
+
+        return to_route('users.index');
+    }
 }
