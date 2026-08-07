@@ -12,7 +12,7 @@ const user = page.props.auth.user;
 
     <div class="flex min-h-screen flex-col items-center justify-center bg-background p-6">
         <main class="flex w-full max-w-md flex-col items-center gap-6 text-center">
-            <h1 class="text-4xl font-bold tracking-tight">Welcome</h1>
+            <h1 class="text-4xl font-bold tracking-tight">Welcome There</h1>
             <p class="text-muted-foreground">Your starter kit is ready. Explore the dashboard or create an account.</p>
 
             <div class="flex gap-3">
