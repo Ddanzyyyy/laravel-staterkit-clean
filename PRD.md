@@ -1,180 +1,109 @@
 # Product Requirements Document (PRD)
-## Web Admin — Aplikasi Booking & Reservasi Hotel
+## Task To Do — Management Aplikasi (Microsoft To Do style)
 
 | | |
 |---|---|
-| **Nama Produk** | Admin Dashboard – Hotel Booking & Reservation System |
-| **Versi Dokumen** | 1.0 |
-| **Tanggal** | 28 Juli 2026 |
+| **Nama Produk** | Task To Do Dashboard |
+| **Versi** | 1.0 |
+| **Tanggal** | 8 Agustus 2026 |
 | **Status** | Draft |
 
 ---
 
 ## 1. Latar Belakang
 
-Bisnis perhotelan membutuhkan sistem terpusat untuk mengelola operasional reservasi kamar dan tiket secara efisien. Saat ini proses pengaturan jadwal kamar, persetujuan reservasi, dan penentuan harga musiman sering dilakukan secara manual (spreadsheet, WhatsApp, atau pencatatan kertas), yang menyebabkan:
-
-- Risiko *double booking* kamar.
-- Keterlambatan approval reservasi tiket/booking.
-- Harga kamar tidak fleksibel terhadap musim (high season/low season/event).
-- Sulitnya monitoring okupansi dan pendapatan secara real-time.
-
-Web Admin ini dibangun untuk memberikan kontrol penuh kepada tim operasional/hotel terhadap seluruh siklus reservasi — dari ketersediaan kamar, approval booking, hingga strategi pricing.
+Pengelolaan tugas pribadi/tim saat ini tersebar (chat, catatan manual, spreadsheet) sehingga mudah terlewat. Aplikasi ini menyediakan panel web untuk mencatat, mengorganisasi, dan memprioritaskan tugas harian dengan pola interaksi yang familiar dari Microsoft To Do: checklist simpel, daftar (list) custom, dan smart view (My Day, Important, Planned, Tasks).
 
 ---
 
-## 2. Tujuan Produk (Goals)
+## 2. Tujuan Produk
 
-1. Menyediakan panel admin terpusat untuk mengelola jadwal & ketersediaan kamar hotel.
-2. Mempercepat proses approval/rejection reservasi tiket/booking tamu.
-3. Memungkinkan admin menentukan dan mengatur harga musiman (seasonal pricing) secara fleksibel.
-4. Memberikan visibilitas data melalui dashboard analitik (okupansi, pendapatan, tren booking).
-5. Mengurangi kesalahan manual dan meningkatkan efisiensi operasional tim hotel.
+1. Menyediakan catatan tugas yang cepat dibuat (add-inline, tanpa pindah halaman).
+2. Mengorganisasi tugas ke dalam list custom + smart list otomatis.
+3. Membantu prioritas lewat due date, important flag, dan view Planned.
+4. Basis arsitektur sederhana (Laravel + Inertia + Vue) yang mudah diperluas (recurring, reminder).
 
 ### Non-Goals (di luar cakupan versi ini)
-- Aplikasi mobile untuk tamu (customer-facing app) — hanya sisi admin.
-- Payment gateway integration penuh (hanya status pembayaran dicatat, bukan proses transaksi).
-- Multi-property/multi-hotel chain management (asumsi: 1 hotel/properti per instance, dapat diperluas di roadmap berikutnya).
+- Aplikasi mobile native (web responsive dulu).
+- Kolaborasi/sharing antar pengguna (single-user per akun).
+- Notifikasi email/push (reminder in-app ditunda).
+- Integrasi kalender eksternal.
 
 ---
 
-## 3. Target Pengguna & Role
+## 3. Target Pengguna
 
-| Role | Deskripsi | Hak Akses Utama |
-|---|---|---|
-| **Super Admin** | Owner/manajemen hotel | Akses penuh ke semua modul, termasuk pengaturan sistem & user management |
-| **Admin Operasional** | Staf front office/reservasi | Kelola jadwal kamar, approve/reject reservasi, lihat laporan |
-| **Finance/Revenue Manager** | Staf keuangan/revenue | Kelola harga musiman, lihat laporan pendapatan |
-| **Staff (View Only)** | Staf pendukung | Hanya bisa melihat jadwal & status reservasi, tanpa edit |
+| Role | Deskripsi |
+|---|---|
+| **User (terautentikasi)** | Semua fitur, data ter-isolasi per user |
 
 ---
 
 ## 4. User Stories Utama
 
-1. Sebagai **admin operasional**, saya ingin melihat kalender ketersediaan kamar agar saya dapat mencegah *double booking*.
-2. Sebagai **admin operasional**, saya ingin menyetujui atau menolak reservasi yang masuk beserta alasannya, agar tamu mendapat kepastian status.
-3. Sebagai **revenue manager**, saya ingin mengatur harga kamar berdasarkan periode musiman (misal: Lebaran, Natal, akhir pekan), agar pendapatan dapat dioptimalkan.
-4. Sebagai **super admin**, saya ingin melihat dashboard ringkasan okupansi dan pendapatan harian/bulanan, agar saya dapat mengambil keputusan bisnis dengan cepat.
-5. Sebagai **admin**, saya ingin menerima notifikasi ketika ada reservasi baru masuk, agar dapat segera ditindaklanjuti.
-6. Sebagai **admin**, saya ingin mengelola data tipe kamar dan fasilitasnya, agar informasi ke tamu selalu akurat.
+1. Sebagai user, saya ingin menambah tugas langsung dari kolom list agar cepat.
+2. Sebagai user, saya ingin mencentang tugas sebagai selesai.
+3. Sebagai user, saya ingin membuat list custom (mis. Pribadi, Kerja) untuk mengelompokkan tugas.
+4. Sebagai user, saya ingin menandai tugas penting dengan bintang.
+5. Sebagai user, saya ingin mengatur due date agar muncul di My Day / Planned.
+6. Sebagai user, saya ingin mencari tugas berdasarkan judul.
 
 ---
 
 ## 5. Ruang Lingkup Fitur (Scope)
 
-### 5.1 Manajemen Jadwal & Ketersediaan Kamar
-- Kalender ketersediaan kamar (per tipe kamar, per tanggal).
-- Blokir kamar manual (maintenance, renovasi, alasan internal).
-- Deteksi konflik jadwal otomatis (anti double-booking).
-- Manajemen tipe kamar (Standard, Deluxe, Suite, dll) beserta jumlah unit, kapasitas, dan fasilitas.
+### 5.1 Manajemen Tugas
+- CRUD tugas: add inline, edit (judul, due date, note), hapus, toggle selesai.
+- Flag `important` (bintang).
+- Due date (tanggal saja) via `<input type="date">`.
+- Note/catatan pada detail tugas.
 
-### 5.2 Manajemen Reservasi/Tiket Booking
-- Daftar reservasi masuk (status: Pending, Approved, Rejected, Cancelled, Checked-in, Checked-out).
-- Detail reservasi (data tamu, tanggal check-in/out, tipe kamar, jumlah tamu, catatan khusus).
-- Aksi approve/reject dengan catatan alasan.
-- Riwayat & log perubahan status reservasi.
-- Filter & pencarian reservasi (by tanggal, status, nama tamu, kode booking).
-- Notifikasi reservasi baru (in-app, opsional email).
+### 5.2 Manajemen List
+- CRUD list custom (nama + warna).
+- Tugas bisa dipindah antar list.
+- Smart list (computed, tanpa tabel): My Day, Important, Planned, Tasks (All).
 
-### 5.3 Manajemen Harga Musiman (Seasonal Pricing)
-- Buat aturan harga berdasarkan rentang tanggal (musim/event tertentu).
-- Set harga per tipe kamar per periode.
-- Prioritas aturan harga jika ada tumpang tindih periode.
-- Preview simulasi harga sebelum publish.
-- Riwayat perubahan harga.
+### 5.3 Smart View (filter query)
+| View | Filter |
+|---|---|
+| My Day | `due_date = hari ini`, belum selesai |
+| Important | `is_important = true`, belum selesai |
+| Planned | `due_date` ada, belum selesai, urut by due_date |
+| Tasks | semua belum selesai |
 
-### 5.4 Dashboard & Laporan
-- Ringkasan okupansi (harian/mingguan/bulanan).
-- Ringkasan pendapatan (revenue) per periode.
-- Grafik tren booking & pembatalan.
-- Kamar paling laris / tipe kamar dengan okupansi tertinggi.
-- Ekspor laporan (Excel/PDF).
-
-### 5.5 Manajemen Pengguna & Akses
-- CRUD user admin dengan role-based access control (RBAC).
-- Log aktivitas admin (audit trail).
-
-### 5.6 Pengaturan Sistem
-- Data master hotel (nama, alamat, kontak, kebijakan check-in/out).
-- Pengaturan notifikasi.
-- Pengaturan umum (bahasa, mata uang, zona waktu).
+### 5.4 Pencarian
+- Filter `q` pada judul tugas (debounce, `preserveState`).
 
 ---
 
-## 6. Daftar Menu Utama Dashboard Admin
+## 6. Menu Utama
 
 ```
-📊 Dashboard (Beranda)
-   ├─ Ringkasan Okupansi Hari Ini
-   ├─ Ringkasan Pendapatan
-   ├─ Grafik Tren Booking
-   └─ Reservasi Menunggu Approval (Quick Access)
+✅ Tasks (halaman utama)
+   ├─ Smart View: My Day / Important / Planned / Tasks
+   ├─ List custom (Pribadi, Kerja, dst.)
+   └─ Add task / Add list inline
 
-🛏️ Manajemen Kamar
-   ├─ Daftar Tipe Kamar
-   ├─ Kalender Ketersediaan Kamar
-   ├─ Blokir/Buka Kamar (Maintenance)
-   └─ Fasilitas & Detail Kamar
-
-📅 Reservasi & Booking
-   ├─ Daftar Reservasi (All Status)
-   ├─ Reservasi Pending (Approval)
-   ├─ Reservasi Disetujui
-   ├─ Reservasi Ditolak/Dibatalkan
-   ├─ Detail & Riwayat Reservasi
-   └─ Check-in / Check-out Management
-
-💰 Manajemen Harga
-   ├─ Harga Reguler (Default)
-   ├─ Harga Musiman (Seasonal Pricing)
-   ├─ Kalender Harga (Price Calendar View)
-   └─ Riwayat Perubahan Harga
-
-📈 Laporan & Analitik
-   ├─ Laporan Okupansi
-   ├─ Laporan Pendapatan
-   ├─ Laporan Reservasi (Booking/Cancel Rate)
-   └─ Ekspor Laporan (Excel/PDF)
-
-🔔 Notifikasi
-   └─ Log Notifikasi (Reservasi Baru, Reminder, dll)
-
-👥 Manajemen Pengguna
-   ├─ Daftar Admin/Staff
-   ├─ Role & Hak Akses
-   └─ Log Aktivitas (Audit Trail)
-
-⚙️ Pengaturan
-   ├─ Profil Hotel
-   ├─ Kebijakan Check-in/Check-out
-   ├─ Pengaturan Notifikasi
-   └─ Pengaturan Umum (Bahasa, Mata Uang, Zona Waktu)
+Dashboard (starter kit, tetap ada)
+Users (starter kit, tetap ada)
+Settings (starter kit, tetap ada)
 ```
 
 ---
 
 ## 7. Alur Utama (Key Flows)
 
-### 7.1 Alur Approval Reservasi
-1. Tamu/sistem booking eksternal mengirim reservasi → masuk ke status **Pending**.
-2. Admin menerima notifikasi reservasi baru.
-3. Admin membuka detail reservasi, mengecek ketersediaan kamar.
-4. Admin memilih **Approve** atau **Reject** (wajib isi alasan jika reject).
-5. Status reservasi terupdate, notifikasi terkirim ke tamu (jika terintegrasi channel notifikasi).
-6. Jadwal kamar otomatis ter-update (kamar terkunci untuk tanggal terkait jika approved).
+### 7.1 Tambah Tugas
+1. User mengetik di input "Add a task" → enter.
+2. Task tersimpan di view/list aktif, tampil di bawah.
 
-### 7.2 Alur Pengaturan Harga Musiman
-1. Revenue manager membuka menu **Harga Musiman**.
-2. Membuat aturan baru: nama musim, rentang tanggal, tipe kamar, harga baru.
-3. Sistem mengecek konflik dengan aturan harga lain pada periode yang sama.
-4. Preview simulasi dampak harga.
-5. Publish aturan → harga otomatis berlaku pada tanggal terkait.
+### 7.2 Tandai Selesai
+1. Klik checkbox pada task → `is_completed = true`.
+2. Tugas hilang dari smart view (terkecuali "Tasks" jika toggle show-completed aktif — opsional).
 
-### 7.3 Alur Manajemen Jadwal Kamar
-1. Admin membuka kalender ketersediaan.
-2. Melihat status kamar per tanggal (Available/Booked/Blocked).
-3. Admin dapat memblokir kamar manual (misal untuk maintenance).
-4. Sistem mencegah reservasi baru masuk ke kamar yang sedang diblokir/terisi.
+### 7.3 Buat List & Pindahkan Tugas
+1. Ketik nama list baru di sidebar → list muncul.
+2. Pada detail tugas, pilih list tujuan → tugas berpindah.
 
 ---
 
@@ -182,46 +111,34 @@ Web Admin ini dibangun untuk memberikan kontrol penuh kepada tim operasional/hot
 
 | Aspek | Kebutuhan |
 |---|---|
-| **Performa** | Halaman dashboard & kalender harus load < 2 detik untuk data hingga 1000 reservasi aktif |
-| **Keamanan** | Autentikasi berbasis role (RBAC), enkripsi password, audit log aktivitas |
-| **Skalabilitas** | Arsitektur mendukung penambahan jumlah kamar/tipe kamar tanpa perubahan struktur besar |
-| **Ketersediaan** | Target uptime 99.5% |
+| **Performa** | Load view < 2s untuk 1000 tugas |
+| **Keamanan** | Auth Laravel, data per-user (`user_id` scope) |
 | **Kompatibilitas** | Responsive (desktop-first, tetap dapat diakses di tablet) |
-| **Auditability** | Semua perubahan status reservasi & harga tercatat dengan timestamp & user pelaku |
+| **Konsistensi** | Mengikuti pola starter kit (custom/ pages, UI radix-vue) |
 
 ---
 
 ## 9. Metrik Keberhasilan (Success Metrics)
 
-- Rata-rata waktu approval reservasi berkurang (target: < 15 menit dari sebelumnya manual).
-- Penurunan kasus double-booking menjadi 0%.
-- Peningkatan pendapatan melalui optimasi harga musiman (target: naik minimal 10% pada periode high season).
-- Adopsi penggunaan dashboard oleh tim admin (target: 100% approval dilakukan via sistem, bukan manual).
+- Tugas terkelola: ≥ 80% tugas punya due date/important dalam 3 bulan.
+- Waktu pembuatan tugas < 3 detik (inline add).
+- Adopsi: user aktif mingguan memakai ≥ 3 smart view.
 
 ---
 
-## 10. Asumsi & Batasan
+## 10. Asumsi & Batasan (MVP)
 
-- Sistem ini adalah aplikasi internal (admin-only), tidak menyediakan sisi pemesanan untuk tamu langsung (asumsi ada sumber booking dari channel lain: website publik, OTA, walk-in yang diinput manual oleh admin).
-- Satu properti/hotel per instance sistem di versi awal.
-- Pembayaran dicatat sebagai status (Lunas/Belum/DP), bukan pemrosesan transaksi langsung.
+- Tanpa recurring task, tanpa reminder/notifikasi (butuh queue).
+- Tanpa subtasks, tags, drag-drop reorder (sorting by query dulu).
+- Tanpa due time (hanya tanggal).
+- My Day = tugas due hari ini (tanpa "Add to My Day" manual).
 
 ---
 
-## 11. Roadmap Pengembangan (Opsional)
+## 11. Roadmap Pengembangan
 
 | Fase | Fitur |
 |---|---|
-| **Fase 1 (MVP)** | Manajemen kamar, reservasi & approval, harga musiman dasar, dashboard sederhana |
-| **Fase 2** | Laporan & analitik lanjutan, ekspor data, notifikasi email |
-| **Fase 3** | Multi-properti, integrasi payment gateway, integrasi channel manager (OTA) |
-
----
-
-## 12. Lampiran
-
-- **Glosarium:**
-  - *Seasonal Pricing*: Penentuan harga kamar berdasarkan periode/musim tertentu.
-  - *Double Booking*: Dua reservasi berbeda untuk kamar & tanggal yang sama.
-  - *Occupancy Rate*: Persentase kamar terisi dibanding total kamar tersedia.
-  - *RBAC*: Role-Based Access Control, pengaturan hak akses berdasarkan peran pengguna.
+| **Fase 1 (MVP)** | CRUD tugas & list, smart view, due date, important, note, search |
+| **Fase 2** | Recurring task, reminder in-app/email, drag-drop, show completed |
+| **Fase 3** | Subtasks, tags, sharing, kalender view |
