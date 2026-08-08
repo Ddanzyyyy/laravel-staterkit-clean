@@ -104,22 +104,24 @@ const destroyTask = () => {
         <div class="flex h-full min-h-0 flex-1">
             <TaskSidebar :lists="lists" :view="view" :list-id="listId" :counts="counts" />
 
-            <div class="flex flex-1 flex-col overflow-y-auto p-4">
-                <h1 class="mb-4 text-2xl font-bold">{{ viewTitle }}</h1>
+            <div class="flex min-h-0 flex-1 flex-col p-4">
+                <div class="min-h-0 flex-1 overflow-y-auto">
+                    <h1 class="mb-4 text-2xl font-bold">{{ viewTitle }}</h1>
 
-                <div class="flex flex-col gap-1">
-                    <TaskItem
-                        v-for="task in tasks"
-                        :key="task.id"
-                        :task="task"
-                        @toggle-complete="toggleComplete"
-                        @toggle-important="toggleImportant"
-                        @open="openDetail"
-                        @delete="taskToDelete = $event"
-                    />
-                    <p v-if="tasks.length === 0" class="py-8 text-center text-sm text-muted-foreground">
-                        No tasks here. Add one below.
-                    </p>
+                    <div class="flex flex-col gap-1">
+                        <TaskItem
+                            v-for="task in tasks"
+                            :key="task.id"
+                            :task="task"
+                            @toggle-complete="toggleComplete"
+                            @toggle-important="toggleImportant"
+                            @open="openDetail"
+                            @delete="taskToDelete = $event"
+                        />
+                        <p v-if="tasks.length === 0" class="py-8 text-center text-sm text-muted-foreground">
+                            No tasks here. Add one below.
+                        </p>
+                    </div>
                 </div>
 
                 <form class="mt-4 flex items-center gap-2" @submit.prevent="addTask">
