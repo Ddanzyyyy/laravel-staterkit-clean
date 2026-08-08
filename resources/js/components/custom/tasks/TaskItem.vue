@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Task } from '@/types';
-import { Star } from 'lucide-vue-next';
+import { Star, Trash2 } from 'lucide-vue-next';
 
 defineProps<{
     task: Task;
@@ -12,6 +12,7 @@ const emit = defineEmits<{
     toggleComplete: [task: Task];
     toggleImportant: [task: Task];
     open: [task: Task];
+    delete: [task: Task];
 }>();
 
 const dueLabel = (due: string | null): string | null => {
@@ -49,6 +50,13 @@ const dueLabel = (due: string | null): string | null => {
                 class="size-4"
                 :class="task.is_important ? 'fill-yellow-400 text-yellow-400' : 'opacity-0 group-hover:opacity-100'"
             />
+        </button>
+        <button
+            class="text-muted-foreground opacity-0 hover:text-destructive group-hover:opacity-100"
+            title="Delete task"
+            @click="emit('delete', task)"
+        >
+            <Trash2 class="size-4" />
         </button>
     </div>
 </template>

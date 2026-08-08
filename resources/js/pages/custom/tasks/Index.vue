@@ -114,6 +114,7 @@ const destroyTask = () => {
                         @toggle-complete="toggleComplete"
                         @toggle-important="toggleImportant"
                         @open="openDetail"
+                        @delete="taskToDelete = $event"
                     />
                     <p v-if="tasks.length === 0" class="py-8 text-center text-sm text-muted-foreground">
                         No tasks here. Add one below.
@@ -165,9 +166,9 @@ const destroyTask = () => {
                 </div>
             </form>
             <DialogFooter class="flex items-center justify-between">
-                <Button type="button" variant="destructive" @click="taskToDelete = activeTask">
+                <!-- <Button type="button" variant="destructive" @click="taskToDelete = activeTask">
                     Delete
-                </Button>
+                </Button> -->
                 <Button type="submit" form="task-detail" :disabled="detailForm.processing">Save</Button>
             </DialogFooter>
         </DialogContent>
