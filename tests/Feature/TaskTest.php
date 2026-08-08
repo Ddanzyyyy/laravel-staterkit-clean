@@ -18,7 +18,11 @@ test('tasks index returns smart views filtered by query', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('custom/tasks/Index')
             ->has('tasks', 1)
-            ->where('view', 'important'));
+            ->where('view', 'important')
+            ->where('counts.all', 3)
+            ->where('counts.important', 1)
+            ->where('counts.my-day', 1)
+            ->where('counts.planned', 1));
 });
 
 test('tasks index filters by list', function () {

@@ -13,6 +13,7 @@ const props = defineProps<{
     lists: TaskList[];
     view: string;
     listId: number;
+    counts: Record<string, number>;
 }>();
 
 const smartViews = [
@@ -85,7 +86,8 @@ const active = (key: string, id?: number) => (id !== undefined ? props.listId ==
             :class="{ 'bg-accent text-accent-foreground': active(view.key) }"
         >
             <component :is="view.icon" class="size-4" />
-            {{ view.label }}
+            <span class="flex-1">{{ view.label }}</span>
+            <span class="text-xs tabular-nums text-muted-foreground">{{ counts[view.key] }}</span>
         </Link>
 
         <div class="mt-2 flex items-center justify-between px-2 text-xs font-semibold uppercase text-muted-foreground">
@@ -101,6 +103,7 @@ const active = (key: string, id?: number) => (id !== undefined ? props.listId ==
         >
             <span class="size-2.5 rounded-full" :style="{ backgroundColor: list.color }" />
             <span class="flex-1 truncate">{{ list.name }}</span>
+            <span class="text-xs tabular-nums text-muted-foreground">{{ list.tasks_count }}</span>
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                     <Button variant="ghost" size="icon" class="size-6 opacity-0 group-hover:opacity-100">

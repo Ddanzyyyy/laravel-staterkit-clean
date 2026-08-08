@@ -16,6 +16,7 @@ import { toast } from 'vue-sonner';
 interface Props {
     lists: TaskList[];
     tasks: Task[];
+    counts: Record<string, number>;
     view: string;
     listId: number;
     filters: { q?: string };
@@ -101,7 +102,7 @@ const destroyTask = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full min-h-0 flex-1">
-            <TaskSidebar :lists="lists" :view="view" :list-id="listId" />
+            <TaskSidebar :lists="lists" :view="view" :list-id="listId" :counts="counts" />
 
             <div class="flex flex-1 flex-col overflow-y-auto p-4">
                 <h1 class="mb-4 text-2xl font-bold">{{ viewTitle }}</h1>

@@ -25,6 +25,15 @@ class TaskController extends Controller
                 $query->where('title', 'like', "%{$search}%");
             });
 
+        $userTasks = fn () => Task::query()->where('user_id', $request->user()->id);
+
+        $counts = [
+            'my-day' => $userTasks()->whereDate('due_date', Carbon::today())->count(),
+            'important' => $userTasks()->where('is_important', true)->count(),
+            'planned' => $userTasks()->whereNotNull('due_date')->count(),
+            'all' => $userTasks()->count(),
+        ];
+
         switch ($view) {
             case 'my-day':
                 $query->whereDate('due_date', Carbon::today());
@@ -44,8 +53,9 @@ class TaskController extends Controller
         }
 
         return Inertia::render('custom/tasks/Index', [
-            'lists' => TaskList::where('user_id', $request->user()->id)->get(),
+            'lists' => TaskList::withCount('tasks')->where('user_id', $request->user()->id)->get(),
             'tasks' => $query->get(),
+            'counts' => $counts,
             'view' => $view,
             'listId' => $listId,
             'filters' => [

@@ -56,6 +56,7 @@ export interface TaskList {
     id: number;
     name: string;
     color: string;
+    tasks_count: number;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
