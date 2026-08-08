@@ -119,6 +119,10 @@ export function useTasksPage(props: Props) {
         router.patch(route('tasks.update', { id: String(task.id) }), { is_important: !task.is_important });
     };
 
+    const showCompleted = ref(false);
+    const incompleteTasks = computed(() => props.tasks.filter((t) => !t.is_completed));
+    const completedTasks = computed(() => props.tasks.filter((t) => t.is_completed));
+
     const taskToDelete = ref<Task | null>(null);
 
     const destroyTask = () => {
@@ -151,6 +155,9 @@ export function useTasksPage(props: Props) {
         saveDetail,
         toggleComplete,
         toggleImportant,
+        showCompleted,
+        incompleteTasks,
+        completedTasks,
         taskToDelete,
         destroyTask,
     };

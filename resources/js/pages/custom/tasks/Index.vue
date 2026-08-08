@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { Ellipsis, Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { ChevronRight, Ellipsis, Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { useTasksPage, type Props } from './index';
 
 const props = defineProps<Props>();
@@ -33,6 +33,9 @@ const {
     saveDetail,
     toggleComplete,
     toggleImportant,
+    showCompleted,
+    incompleteTasks,
+    completedTasks,
     taskToDelete,
     destroyTask,
 } = useTasksPage(props);
@@ -70,7 +73,7 @@ const {
 
                     <div class="flex flex-col gap-1">
                         <TaskItem
-                            v-for="task in tasks"
+                            v-for="task in incompleteTasks"
                             :key="task.id"
                             :task="task"
                             @toggle-complete="toggleComplete"
@@ -78,7 +81,30 @@ const {
                             @open="openDetail"
                             @delete="taskToDelete = $event"
                         />
-                        <p v-if="tasks.length === 0" class="py-8 text-center text-sm text-muted-foreground">No tasks here. Add one below.</p>
+                        <p v-if="tasks.length === 0" class="py-8 text-center text-sm text-muted-foreground">
+                            No tasks here. Add one below.
+                        </p>
+                    </div>
+
+                    <div v-if="completedTasks.length > 0" class="mt-4">
+                        <button
+                            class="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+                            @click="showCompleted = !showCompleted"
+                        >
+                            <ChevronRight class="size-4 transition-transform" :class="{ 'rotate-90': showCompleted }" />
+                            Completed ({{ completedTasks.length }})
+                        </button>
+                        <div v-if="showCompleted" class="mt-1 flex flex-col gap-1">
+                            <TaskItem
+                                v-for="task in completedTasks"
+                                :key="task.id"
+                                :task="task"
+                                @toggle-complete="toggleComplete"
+                                @toggle-important="toggleImportant"
+                                @open="openDetail"
+                                @delete="taskToDelete = $event"
+                            />
+                        </div>
                     </div>
                 </div>
 
