@@ -78,18 +78,13 @@ export function useTasksPage(props: Props) {
     };
 
     const activeTask = ref<Task | null>(null);
-    const detailForm = useForm<{ title: string; due_date: string; note: string; is_important: boolean; task_list_id: string; color: string }>({
+    const detailForm = useForm<{ title: string; due_date: string; note: string; is_important: boolean; task_list_id: string }>({
         title: '',
         due_date: '',
         note: '',
         is_important: false,
         task_list_id: '',
-        color: '',
     });
-
-    const handleColorInput = (event: Event) => {
-        detailForm.color = (event.target as HTMLInputElement).value;
-    };
 
     const openDetail = (task: Task) => {
         detailForm.clearErrors();
@@ -99,7 +94,6 @@ export function useTasksPage(props: Props) {
             note: task.note ?? '',
             is_important: task.is_important,
             task_list_id: task.task_list_id ? String(task.task_list_id) : '',
-            color: task.color ?? '',
         });
         detailForm.reset();
         activeTask.value = task;
@@ -153,7 +147,6 @@ export function useTasksPage(props: Props) {
         addTask,
         activeTask,
         detailForm,
-        handleColorInput,
         openDetail,
         saveDetail,
         toggleComplete,

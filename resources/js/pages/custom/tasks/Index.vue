@@ -29,7 +29,6 @@ const {
     addTask,
     activeTask,
     detailForm,
-    handleColorInput,
     openDetail,
     saveDetail,
     toggleComplete,
@@ -113,16 +112,6 @@ const {
                 <div class="flex items-center gap-2">
                     <Checkbox v-model:checked="detailForm.is_important" id="detail-important" />
                     <Label for="detail-important">Important</Label>
-                </div>
-                <div class="flex items-center gap-2">
-                    <Label>Color</Label>
-                    <input
-                        type="color"
-                        :value="detailForm.color || '#6366f1'"
-                        class="h-8 w-12 cursor-pointer rounded border bg-background p-0.5"
-                        @input="handleColorInput"
-                    />
-                    <Button v-if="detailForm.color" type="button" variant="ghost" size="sm" @click="detailForm.color = ''">Reset</Button>
                 </div>
                 <div class="flex flex-col gap-2">
                     <Label>List</Label>

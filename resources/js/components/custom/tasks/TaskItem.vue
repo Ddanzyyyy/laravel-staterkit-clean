@@ -29,7 +29,6 @@ const dueLabel = (due: string | null): string | null => {
         class="group flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50"
         :class="{ 'opacity-50': task.is_completed }"
     >
-        <span v-if="task.color" class="size-2.5 shrink-0 rounded-full" :style="{ backgroundColor: task.color }" />
         <Checkbox
             :checked="task.is_completed"
             class="size-5 cursor-pointer"
