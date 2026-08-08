@@ -4,97 +4,39 @@ import TaskSidebar from '@/components/custom/tasks/TaskSidebar.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { BreadcrumbItem, Task, TaskList } from '@/types';
-import { Head, router, useForm } from '@inertiajs/vue3';
-import { Plus } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
-import { toast } from 'vue-sonner';
-
-interface Props {
-    lists: TaskList[];
-    tasks: Task[];
-    counts: Record<string, number>;
-    view: string;
-    listId: number;
-    filters: { q?: string };
-}
+import { Head } from '@inertiajs/vue3';
+import { Ellipsis, Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { useTasksPage, type Props } from './index';
 
 const props = defineProps<Props>();
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Tasks', href: '/tasks' },
-];
-
-const viewTitle = computed(() => {
-    if (props.listId > 0) {
-        return props.lists.find((l) => l.id === props.listId)?.name ?? 'Tasks';
-    }
-    return { 'my-day': 'My Day', important: 'Important', planned: 'Planned', all: 'Tasks' }[props.view] ?? 'Tasks';
-});
-
-const newTask = useForm({ title: '', task_list_id: props.listId > 0 ? String(props.listId) : '' });
-
-const addTask = () => {
-    newTask.post(route('tasks.store'), {
-        onSuccess: () => {
-            newTask.reset();
-            toast.success('Task added');
-        },
-    });
-};
-
-const activeTask = ref<Task | null>(null);
-const detailForm = useForm<{ title: string; due_date: string; note: string; is_important: boolean; task_list_id: string; color: string }>({ title: '', due_date: '', note: '', is_important: false, task_list_id: '', color: '' });
-
-const openDetail = (task: Task) => {
-    detailForm.clearErrors();
-    detailForm.defaults({
-        title: task.title,
-        due_date: task.due_date ?? '',
-        note: task.note ?? '',
-        is_important: task.is_important,
-        task_list_id: task.task_list_id ? String(task.task_list_id) : '',
-        color: task.color ?? '',
-    });
-    detailForm.reset();
-    activeTask.value = task;
-};
-
-const saveDetail = () => {
-    if (!activeTask.value) {
-        return;
-    }
-    detailForm.patch(route('tasks.update', { id: String(activeTask.value.id) }), {
-        onSuccess: () => {
-            activeTask.value = null;
-            toast.success('Task updated');
-        },
-    });
-};
-
-const toggleComplete = (task: Task) => {
-    router.patch(route('tasks.update', { id: String(task.id) }), { is_completed: !task.is_completed });
-};
-
-const toggleImportant = (task: Task) => {
-    router.patch(route('tasks.update', { id: String(task.id) }), { is_important: !task.is_important });
-};
-
-const taskToDelete = ref<Task | null>(null);
-
-const destroyTask = () => {
-    if (!taskToDelete.value) {
-        return;
-    }
-    const task = taskToDelete.value;
-    taskToDelete.value = null;
-    router.delete(route('tasks.destroy', { id: String(task.id) }), {
-        onSuccess: () => toast.success('Task deleted'),
-    });
-};
+const {
+    breadcrumbs,
+    viewTitle,
+    currentList,
+    renameTarget,
+    renameForm,
+    openRename,
+    rename,
+    deleteTarget,
+    openDelete,
+    destroyList,
+    newTask,
+    addTask,
+    activeTask,
+    detailForm,
+    handleColorInput,
+    openDetail,
+    saveDetail,
+    toggleComplete,
+    toggleImportant,
+    taskToDelete,
+    destroyTask,
+} = useTasksPage(props);
 </script>
 
 <template>
@@ -106,7 +48,26 @@ const destroyTask = () => {
 
             <div class="flex min-h-0 flex-1 flex-col p-4">
                 <div class="min-h-0 flex-1 overflow-y-auto">
-                    <h1 class="mb-4 text-2xl font-bold">{{ viewTitle }}</h1>
+                    <div class="mb-4 flex items-center justify-between">
+                        <h1 class="text-2xl font-bold">{{ viewTitle }}</h1>
+                        <DropdownMenu v-if="currentList">
+                            <DropdownMenuTrigger as-child>
+                                <Button variant="ghost" size="icon" class="size-8">
+                                    <Ellipsis class="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem @click="openRename">
+                                    <Pencil class="size-4" />
+                                    Rename
+                                </DropdownMenuItem>
+                                <DropdownMenuItem variant="destructive" @click="openDelete">
+                                    <Trash2 class="size-4" />
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
 
                     <div class="flex flex-col gap-1">
                         <TaskItem
@@ -118,9 +79,7 @@ const destroyTask = () => {
                             @open="openDetail"
                             @delete="taskToDelete = $event"
                         />
-                        <p v-if="tasks.length === 0" class="py-8 text-center text-sm text-muted-foreground">
-                            No tasks here. Add one below.
-                        </p>
+                        <p v-if="tasks.length === 0" class="py-8 text-center text-sm text-muted-foreground">No tasks here. Add one below.</p>
                     </div>
                 </div>
 
@@ -157,7 +116,12 @@ const destroyTask = () => {
                 </div>
                 <div class="flex items-center gap-2">
                     <Label>Color</Label>
-                    <input type="color" :value="detailForm.color || '#6366f1'" class="h-8 w-12 cursor-pointer rounded border bg-background p-0.5" @input="detailForm.color = ($event.target as HTMLInputElement).value" />
+                    <input
+                        type="color"
+                        :value="detailForm.color || '#6366f1'"
+                        class="h-8 w-12 cursor-pointer rounded border bg-background p-0.5"
+                        @input="handleColorInput"
+                    />
                     <Button v-if="detailForm.color" type="button" variant="ghost" size="sm" @click="detailForm.color = ''">Reset</Button>
                 </div>
                 <div class="flex flex-col gap-2">
@@ -169,9 +133,6 @@ const destroyTask = () => {
                 </div>
             </form>
             <DialogFooter class="flex items-center justify-between">
-                <!-- <Button type="button" variant="destructive" @click="taskToDelete = activeTask">
-                    Delete
-                </Button> -->
                 <Button type="submit" form="task-detail" :disabled="detailForm.processing">Save</Button>
             </DialogFooter>
         </DialogContent>
@@ -181,13 +142,39 @@ const destroyTask = () => {
         <DialogContent class="sm:max-w-[425px]">
             <DialogHeader>
                 <DialogTitle>Delete task</DialogTitle>
-                <DialogDescription>
-                    Are you sure you want to delete "{{ taskToDelete?.title }}"? This action cannot be undone.
-                </DialogDescription>
+                <DialogDescription> Are you sure you want to delete "{{ taskToDelete?.title }}"? This action cannot be undone. </DialogDescription>
             </DialogHeader>
             <DialogFooter>
                 <Button variant="outline" @click="taskToDelete = null">Cancel</Button>
                 <Button variant="destructive" @click="destroyTask">Delete</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog :open="renameTarget !== null" @update:open="(open: boolean) => !open && (renameTarget = null)">
+        <DialogContent class="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Rename list</DialogTitle>
+            </DialogHeader>
+            <form id="rename-list" class="flex flex-col gap-2" @submit.prevent="rename">
+                <Input v-model="renameForm.name" autofocus />
+            </form>
+            <DialogFooter>
+                <Button variant="outline" @click="renameTarget = null">Cancel</Button>
+                <Button type="submit" form="rename-list" :disabled="renameForm.processing">Save</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog :open="deleteTarget !== null" @update:open="(open: boolean) => !open && (deleteTarget = null)">
+        <DialogContent class="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Delete list</DialogTitle>
+                <DialogDescription> Are you sure you want to delete "{{ deleteTarget?.name }}"? Tasks in it will be kept. </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+                <Button variant="outline" @click="deleteTarget = null">Cancel</Button>
+                <Button variant="destructive" @click="destroyList">Delete</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
