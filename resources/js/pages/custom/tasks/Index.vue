@@ -3,7 +3,7 @@ import TaskItem from '@/components/custom/tasks/TaskItem.vue';
 import TaskSidebar from '@/components/custom/tasks/TaskSidebar.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -82,12 +82,17 @@ const toggleImportant = (task: Task) => {
     router.patch(route('tasks.update', { id: String(task.id) }), { is_important: !task.is_important });
 };
 
-const destroyTask = (task: Task) => {
-    if (window.confirm(`Delete "${task.title}"?`)) {
-        router.delete(route('tasks.destroy', { id: String(task.id) }), {
-            onSuccess: () => toast.success('Task deleted'),
-        });
+const taskToDelete = ref<Task | null>(null);
+
+const destroyTask = () => {
+    if (!taskToDelete.value) {
+        return;
     }
+    const task = taskToDelete.value;
+    taskToDelete.value = null;
+    router.delete(route('tasks.destroy', { id: String(task.id) }), {
+        onSuccess: () => toast.success('Task deleted'),
+    });
 };
 </script>
 
@@ -160,10 +165,25 @@ const destroyTask = (task: Task) => {
                 </div>
             </form>
             <DialogFooter class="flex items-center justify-between">
-                <Button type="button" variant="destructive" @click="activeTask && destroyTask(activeTask)">
+                <Button type="button" variant="destructive" @click="taskToDelete = activeTask">
                     Delete
                 </Button>
                 <Button type="submit" form="task-detail" :disabled="detailForm.processing">Save</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog :open="taskToDelete !== null" @update:open="(open: boolean) => !open && (taskToDelete = null)">
+        <DialogContent class="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Delete task</DialogTitle>
+                <DialogDescription>
+                    Are you sure you want to delete "{{ taskToDelete?.title }}"? This action cannot be undone.
+                </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+                <Button variant="outline" @click="taskToDelete = null">Cancel</Button>
+                <Button variant="destructive" @click="destroyTask">Delete</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>

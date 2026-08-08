@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import type { TaskList } from '@/types';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { CalendarDays, CheckCircle2, Ellipsis, Flag, Inbox, Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 const props = defineProps<{
@@ -31,21 +33,43 @@ const createList = () => {
     });
 };
 
-const rename = (list: TaskList) => {
-    const name = window.prompt('Rename list', list.name);
-    if (name && name.trim() && name !== list.name) {
-        router.patch(route('task-lists.update', list.id), { name: name.trim() }, {
-            onSuccess: () => toast.success('List renamed'),
-        });
-    }
+const renameTarget = ref<TaskList | null>(null);
+const renameForm = useForm({ name: '' });
+
+const openRename = (list: TaskList) => {
+    renameForm.clearErrors();
+    renameForm.reset({ name: list.name });
+    renameTarget.value = list;
 };
 
-const destroy = (list: TaskList) => {
-    if (window.confirm(`Delete "${list.name}"? Tasks in it will be kept.`)) {
-        router.delete(route('task-lists.destroy', list.id), {
-            onSuccess: () => toast.success('List deleted'),
-        });
+const rename = () => {
+    if (!renameTarget.value) {
+        return;
     }
+    const list = renameTarget.value;
+    renameForm.patch(route('task-lists.update', String(list.id)), {
+        onSuccess: () => {
+            renameTarget.value = null;
+            toast.success('List renamed');
+        },
+    });
+};
+
+const deleteTarget = ref<TaskList | null>(null);
+
+const openDelete = (list: TaskList) => {
+    deleteTarget.value = list;
+};
+
+const destroy = () => {
+    if (!deleteTarget.value) {
+        return;
+    }
+    const list = deleteTarget.value;
+    deleteTarget.value = null;
+    router.delete(route('task-lists.destroy', String(list.id)), {
+        onSuccess: () => toast.success('List deleted'),
+    });
 };
 
 const active = (key: string, id?: number) => (id !== undefined ? props.listId === id : props.view === key);
@@ -84,11 +108,11 @@ const active = (key: string, id?: number) => (id !== undefined ? props.listId ==
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
-                    <DropdownMenuItem @click="rename(list)">
+                    <DropdownMenuItem @click="openRename(list)">
                         <Pencil class="size-4" />
                         Rename
                     </DropdownMenuItem>
-                    <DropdownMenuItem variant="destructive" @click="destroy(list)">
+                    <DropdownMenuItem variant="destructive" @click="openDelete(list)">
                         <Trash2 class="size-4" />
                         Delete
                     </DropdownMenuItem>
@@ -108,4 +132,34 @@ const active = (key: string, id?: number) => (id !== undefined ? props.listId ==
             All tasks are kept forever
         </div>
     </div>
+
+    <Dialog :open="renameTarget !== null" @update:open="(open: boolean) => !open && (renameTarget = null)">
+        <DialogContent class="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Rename list</DialogTitle>
+            </DialogHeader>
+            <form id="rename-list" class="flex flex-col gap-2" @submit.prevent="rename">
+                <Input v-model="renameForm.name" autofocus />
+            </form>
+            <DialogFooter>
+                <Button variant="outline" @click="renameTarget = null">Cancel</Button>
+                <Button type="submit" form="rename-list" :disabled="renameForm.processing">Save</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog :open="deleteTarget !== null" @update:open="(open: boolean) => !open && (deleteTarget = null)">
+        <DialogContent class="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Delete list</DialogTitle>
+                <DialogDescription>
+                    Are you sure you want to delete "{{ deleteTarget?.name }}"? Tasks in it will be kept.
+                </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+                <Button variant="outline" @click="deleteTarget = null">Cancel</Button>
+                <Button variant="destructive" @click="destroy">Delete</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>
