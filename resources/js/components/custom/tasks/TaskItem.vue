@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Task } from '@/types';
-import { Star, Trash2 } from 'lucide-vue-next';
+import { CalendarDays, Star, Trash2 } from 'lucide-vue-next';
 
 defineProps<{
     task: Task;
@@ -34,10 +34,15 @@ const dueLabel = (due: string | null): string | null => {
             class="size-5 cursor-pointer"
             @update:checked="emit('toggleComplete', task)"
         />
-        <button class="flex-1 truncate text-left text-sm" @click="emit('open', task)">
-            <span :class="{ 'line-through': task.is_completed }">{{ task.title }}</span>
-            <span v-if="dueLabel(task.due_date)" class="ml-2 text-xs text-muted-foreground">
-                {{ dueLabel(task.due_date) }}
+        <button class="min-w-0 flex-1 text-left text-sm" @click="emit('open', task)">
+            <span class="block truncate" :class="{ 'line-through': task.is_completed }">{{ task.title }}</span>
+            <span v-if="task.note || dueLabel(task.due_date)" class="flex items-baseline truncate text-xs text-muted-foreground">
+                <span v-if="task.note" class="truncate">{{ task.note }}</span>
+                <span v-if="task.note && dueLabel(task.due_date)" class="mx-1.5 shrink-0 font-bold">•</span>
+                <span v-if="dueLabel(task.due_date)" class="flex shrink-0 items-center gap-1">
+                    <CalendarDays class="size-3" />
+                    {{ dueLabel(task.due_date) }}
+                </span>
             </span>
         </button>
         <button
