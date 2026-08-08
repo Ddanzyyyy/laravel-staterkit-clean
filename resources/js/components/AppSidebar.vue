@@ -19,11 +19,6 @@ const mainNavItems: NavItem[] = [
         href: '/users',
         icon: UserPlus,
     },
-    {
-        title: 'Main',
-        href: '',
-        icon: Folder,
-    },
 ];
 
 const footerNavItems: NavItem[] = [

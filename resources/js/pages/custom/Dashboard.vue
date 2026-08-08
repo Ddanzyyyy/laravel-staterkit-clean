@@ -31,9 +31,9 @@ const user = page.props.auth.user;
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <Card class="p-4">
+            <!-- <Card class="p-4">
                 <ProfileAvatar :user="user" />
-            </Card>
+            </Card> -->
 
             <!-- <div class="grid auto-rows-min gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card v-for="stat in stats" :key="stat.title">
