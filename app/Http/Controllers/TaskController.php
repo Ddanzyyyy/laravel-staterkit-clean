@@ -20,7 +20,7 @@ class TaskController extends Controller
 
         $query = Task::query()
             ->where('user_id', $request->user()->id)
-            ->where('is_completed', false)
+            ->orderBy('is_completed')
             ->when($search, function ($query, string $search) {
                 $query->where('title', 'like', "%{$search}%");
             });

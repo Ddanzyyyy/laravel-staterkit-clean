@@ -52,7 +52,7 @@ class Task extends Model
         return [
             'is_completed' => 'boolean',
             'is_important' => 'boolean',
-            'due_date' => 'date',
+            'due_date' => 'date:Y-m-d',
         ];
     }
 }

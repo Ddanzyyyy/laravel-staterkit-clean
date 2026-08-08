@@ -36,16 +36,19 @@ test('tasks index filters by list', function () {
             ->where('listId', $list->id));
 });
 
-test('tasks index hides completed tasks', function () {
+test('tasks index shows completed tasks last', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
     Task::factory()->completed()->create(['user_id' => $user->id, 'title' => 'Done task']);
+    Task::factory()->create(['user_id' => $user->id, 'title' => 'Active task']);
 
     $this->get('/tasks')
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->has('tasks', 0));
+            ->has('tasks', 2)
+            ->where('tasks.0.title', 'Active task')
+            ->where('tasks.1.title', 'Done task'));
 });
 
 test('tasks index searches by title', function () {

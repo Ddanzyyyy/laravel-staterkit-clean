@@ -39,14 +39,14 @@ const newTask = useForm({ title: '', task_list_id: props.listId > 0 ? String(pro
 const addTask = () => {
     newTask.post(route('tasks.store'), {
         onSuccess: () => {
-            newTask.reset({ title: '', task_list_id: props.listId > 0 ? String(props.listId) : '' });
+            newTask.reset();
             toast.success('Task added');
         },
     });
 };
 
 const activeTask = ref<Task | null>(null);
-const detailForm = useForm({ title: '', due_date: '', note: '', is_important: false, task_list_id: '', color: '' });
+const detailForm = useForm<{ title: string; due_date: string; note: string; is_important: boolean; task_list_id: string; color: string }>({ title: '', due_date: '', note: '', is_important: false, task_list_id: '', color: '' });
 
 const openDetail = (task: Task) => {
     detailForm.clearErrors();
@@ -66,7 +66,7 @@ const saveDetail = () => {
     if (!activeTask.value) {
         return;
     }
-    detailForm.patch(route('tasks.update', String(activeTask.value.id)), {
+    detailForm.patch(route('tasks.update', { id: String(activeTask.value.id) }), {
         onSuccess: () => {
             activeTask.value = null;
             toast.success('Task updated');
@@ -75,16 +75,16 @@ const saveDetail = () => {
 };
 
 const toggleComplete = (task: Task) => {
-    router.patch(route('tasks.update', String(task.id)), { is_completed: !task.is_completed });
+    router.patch(route('tasks.update', { id: String(task.id) }), { is_completed: !task.is_completed });
 };
 
 const toggleImportant = (task: Task) => {
-    router.patch(route('tasks.update', String(task.id)), { is_important: !task.is_important });
+    router.patch(route('tasks.update', { id: String(task.id) }), { is_important: !task.is_important });
 };
 
 const destroyTask = (task: Task) => {
     if (window.confirm(`Delete "${task.title}"?`)) {
-        router.delete(route('tasks.destroy', String(task.id)), {
+        router.delete(route('tasks.destroy', { id: String(task.id) }), {
             onSuccess: () => toast.success('Task deleted'),
         });
     }
