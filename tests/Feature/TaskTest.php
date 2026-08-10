@@ -25,6 +25,24 @@ test('tasks index returns smart views filtered by query', function () {
             ->where('counts.planned', 1));
 });
 
+test('tasks index counts only incomplete tasks', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    Task::factory()->create(['user_id' => $user->id]);
+    Task::factory()->completed()->create(['user_id' => $user->id]);
+
+    $list = TaskList::factory()->create(['user_id' => $user->id]);
+    Task::factory()->create(['user_id' => $user->id, 'task_list_id' => $list->id]);
+    Task::factory()->completed()->create(['user_id' => $user->id, 'task_list_id' => $list->id]);
+
+    $this->get('/tasks')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('counts.all', 2)
+            ->where('lists.0.tasks_count', 1));
+});
+
 test('tasks index filters by list', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
