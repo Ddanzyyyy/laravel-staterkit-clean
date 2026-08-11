@@ -51,7 +51,6 @@ const submit = () => {
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <Card class="max-w-lg">
                 <CardHeader>
-                    
                     <CardTitle class="flex items-center gap-2">
                         <Pencil class="h-5 w-5" />
                         Edit User
