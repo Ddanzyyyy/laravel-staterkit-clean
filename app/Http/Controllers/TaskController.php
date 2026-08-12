@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
 use App\Models\TaskList;
 use Illuminate\Http\RedirectResponse;
@@ -64,41 +66,18 @@ class TaskController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreTaskRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'task_list_id' => ['nullable', 'integer'],
-        ]);
-
-        if (! empty($validated['task_list_id']) && ! $this->ownsList($request, (int) $validated['task_list_id'])) {
-            abort(403);
-        }
-
-        $request->user()->tasks()->create($validated);
+        $request->user()->tasks()->create($request->validated());
 
         return back();
     }
 
-    public function update(Request $request, Task $task): RedirectResponse
+    public function update(UpdateTaskRequest $request, Task $task): RedirectResponse
     {
         abort_unless($task->user_id === $request->user()->id, 403);
 
-        $validated = $request->validate([
-            'title' => ['sometimes', 'required', 'string', 'max:255'],
-            'is_completed' => ['sometimes', 'boolean'],
-            'is_important' => ['sometimes', 'boolean'],
-            'due_date' => ['nullable', 'date'],
-            'note' => ['nullable', 'string'],
-            'color' => ['nullable', 'string', 'max:20'],
-            'task_list_id' => ['nullable', 'integer'],
-        ]);
-
-        if (array_key_exists('task_list_id', $validated) && $validated['task_list_id'] !== null && ! $this->ownsList($request, (int) $validated['task_list_id'])) {
-            abort(403);
-        }
-
-        $task->fill($validated)->save();
+        $task->fill($request->validated())->save();
 
         return back();
     }
@@ -110,10 +89,5 @@ class TaskController extends Controller
         $task->delete();
 
         return back();
-    }
-
-    private function ownsList(Request $request, int $listId): bool
-    {
-        return TaskList::where('id', $listId)->where('user_id', $request->user()->id)->exists();
     }
 }
