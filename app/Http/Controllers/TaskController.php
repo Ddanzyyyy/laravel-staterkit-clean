@@ -6,6 +6,7 @@ use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
 use App\Models\TaskList;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -22,11 +23,12 @@ class TaskController extends Controller
 
         $query = Task::query()
             ->where('user_id', $request->user()->id)
-            ->orderBy('is_completed')
+            ->orderBy('is_completed', 'asc')
             ->when($search, function ($query, string $search) {
                 $query->where('title', 'like', "%{$search}%");
             });
 
+        /** @var \Closure(): Builder $userTasks */
         $userTasks = fn () => Task::query()->where('user_id', $request->user()->id)->where('is_completed', false);
 
         $counts = [

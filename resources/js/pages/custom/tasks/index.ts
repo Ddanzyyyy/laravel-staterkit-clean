@@ -41,7 +41,7 @@ export function useTasksPage(props: Props) {
             return;
         }
         const list = renameTarget.value;
-        renameForm.patch(route('task-lists.update', { id: String(list.id) }), {
+        renameForm.patch(route('task-lists.update', { list: String(list.id) }), {
             onSuccess: () => {
                 renameTarget.value = null;
                 toast.success('List renamed');
@@ -61,7 +61,7 @@ export function useTasksPage(props: Props) {
         }
         const list = deleteTarget.value;
         deleteTarget.value = null;
-        router.delete(route('task-lists.destroy', { id: String(list.id) }), {
+        router.delete(route('task-lists.destroy', { list: String(list.id) }), {
             onSuccess: () => toast.success('List deleted'),
         });
     };
@@ -103,7 +103,7 @@ export function useTasksPage(props: Props) {
         if (!activeTask.value) {
             return;
         }
-        detailForm.patch(route('tasks.update', { id: String(activeTask.value.id) }), {
+        detailForm.patch(route('tasks.update', { task: String(activeTask.value.id) }), {
             onSuccess: () => {
                 activeTask.value = null;
                 toast.success('Task updated');
@@ -112,11 +112,11 @@ export function useTasksPage(props: Props) {
     };
 
     const toggleComplete = (task: Task) => {
-        router.patch(route('tasks.update', { id: String(task.id) }), { is_completed: !task.is_completed });
+        router.patch(route('tasks.update', { task: String(task.id) }), { is_completed: !task.is_completed });
     };
 
     const toggleImportant = (task: Task) => {
-        router.patch(route('tasks.update', { id: String(task.id) }), { is_important: !task.is_important });
+        router.patch(route('tasks.update', { task: String(task.id) }), { is_important: !task.is_important });
     };
 
     const showCompleted = ref(false);
@@ -131,7 +131,7 @@ export function useTasksPage(props: Props) {
         }
         const task = taskToDelete.value;
         taskToDelete.value = null;
-        router.delete(route('tasks.destroy', { id: String(task.id) }), {
+        router.delete(route('tasks.destroy', { task: String(task.id) }), {
             onSuccess: () => toast.success('Task deleted'),
         });
     };
