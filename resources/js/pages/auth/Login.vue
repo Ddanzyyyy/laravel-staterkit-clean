@@ -62,6 +62,7 @@ const submit = () => {
             <div class="mb-4 mt-6 flex items-center justify-start">
                 <Button class="w-full" :disabled="form.processing" :tabindex="4">
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
+                    
                     Log in
                 </Button>
             </div>
