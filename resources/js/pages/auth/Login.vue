@@ -41,7 +41,6 @@ const submit = () => {
                 <Label for="email">Email address</Label>
                 <Input id="email" type="email" required autofocus :tabindex="1" autocomplete="email" v-model="form.email" placeholder="email@example.com" />
                 <InputError :message="form.errors.email" />
-                
             </div>
 
             <div class="mt-4 grid gap-2">
