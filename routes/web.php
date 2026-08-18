@@ -3,6 +3,7 @@
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskListController;
 use App\Http\Controllers\UserController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -13,7 +14,9 @@ Route::get('/', function () {
 
 // ponytail: custom dashboard lives in pages/custom, starter kit Dashboard.vue stays untouched
 Route::get('dashboard', function () {
-    return Inertia::render('custom/Dashboard');
+    return Inertia::render('custom/Dashboard', [
+        'totalUsers' => User::count(),
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
